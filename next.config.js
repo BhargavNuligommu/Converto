@@ -2,13 +2,13 @@
 const nextConfig = {
     swcMinify: true,
 
-    typescript: {
-        ignoreBuildErrors: true,
-    },
+    // typescript: {
+    //     ignoreBuildErrors: true,
+    // },
 
-    eslint: {
-        ignoreDuringBuilds:true,
-    },
+    // eslint: {
+    //     ignoreDuringBuilds:true,
+    // },
 };
 
 module.exports = nextConfig;
