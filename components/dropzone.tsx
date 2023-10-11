@@ -4,7 +4,6 @@
 import { FiUploadCloud } from 'react-icons/fi';
 import { LuFileSymlink } from 'react-icons/lu';
 import { MdClose } from 'react-icons/md';
-import ReactDropzone from 'react-dropzone';
 import bytesToSize from '@/utils/bytes-to-size';
 import fileToIcon from '@/utils/file-to-icon';
 import { useState, useEffect, useRef } from 'react';
@@ -26,9 +25,10 @@ import {
   SelectValue,
 } from './ui/select';
 import { Button } from './ui/button';
-import loadFfmpeg from '@/utils/load-ffmpeg';
+// import loadFfmpeg from '@/utils/load-ffmpeg';
 import type { Action } from '@/types';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
+import dynamic from 'next/dynamic';
+// import { FFmpeg } from '@ffmpeg/ffmpeg';
 
 const extensions = {
   image: [
@@ -69,6 +69,11 @@ const extensions = {
 export default function Dropzone() {
   // variables & hooks
   const { toast } = useToast();
+  const ReactDropzone = dynamic(
+    () => import('react-dropzone'),
+    { ssr: false }
+  );
+  
   const [is_hover, setIsHover] = useState<boolean>(false);
   const [actions, setActions] = useState<Action[]>([]);
   const [is_ready, setIsReady] = useState<boolean>(false);
@@ -77,6 +82,7 @@ export default function Dropzone() {
   const [is_converting, setIsConverting] = useState<boolean>(false);
   const [is_done, setIsDone] = useState<boolean>(false);
   const ffmpegRef = useRef<any>(null);
+  const [ffmpeg, setFfmpeg] = useState(null);
   const accepted_files = {
     'image/*': [
       '.jpg',
@@ -217,13 +223,31 @@ export default function Dropzone() {
     } else checkIsReady();
   }, [actions]);
   useEffect(() => {
+    async function load() {
+      // Dynamic import inside useEffect
+      const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+      const { toBlobURL } = await import('@ffmpeg/util');
+
+
+      const ffmpegInstance = new FFmpeg();
+      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
+      await ffmpegInstance.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      });
+
+      // setFfmpeg(ffmpegInstance);
+      ffmpegRef.current = ffmpegInstance;
+      setIsLoaded(true);
+    }
+
     load();
   }, []);
-  const load = async () => {
-    const ffmpeg_response: FFmpeg = await loadFfmpeg();
-    ffmpegRef.current = ffmpeg_response;
-    setIsLoaded(true);
-  };
+  // const load = async () => {
+  //   const ffmpeg_response: FFmpeg = await loadFfmpeg();
+  //   ffmpegRef.current = ffmpeg_response;
+  //   setIsLoaded(true);
+  // };
 
   // returns
   if (actions.length) {

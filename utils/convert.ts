@@ -1,6 +1,6 @@
 // imports
 import { Action } from '@/types';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
+import type { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 
 function getFileExtension(file_name: string) {
@@ -24,6 +24,10 @@ export default async function convert(
   ffmpeg: FFmpeg,
   action: Action,
 ): Promise<any> {
+
+  // const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+  // const { fetchFile } = await import('@ffmpeg/util');
+    
   const { file, to, file_name, file_type } = action;
   const input = getFileExtension(file_name);
   const output = removeFileExtension(file_name) + '.' + to;
